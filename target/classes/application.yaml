@@ -1,0 +1,16 @@
+server:
+  port: ${SERVER_PORT:9999}
+
+spring:
+  application:
+    name: fineract-hook
+  profiles:
+    active: ${PROFILE:local}
+  kafka:
+
+fineract:
+  kafka:
+    bootstrap-servers: ${BROKER_SERVER:"localhost:9092"}
+    client-id: fineract-hook-api
+    topic:
+      transaction: transaction

@@ -1,0 +1,6 @@
+com\nexusbank\corebanking\hook\KafkaConfiguration.class
+com\nexusbank\corebanking\hook\services\KafkaProducerService.class
+com\nexusbank\corebanking\hook\Application.class
+com\nexusbank\corebanking\hook\model\TransactionPayload.class
+com\nexusbank\corebanking\hook\resources\HookController.class
+com\nexusbank\corebanking\hook\model\TransactionEvent.class
