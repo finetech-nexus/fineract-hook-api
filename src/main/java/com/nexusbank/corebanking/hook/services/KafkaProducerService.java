@@ -18,7 +18,7 @@ public class KafkaProducerService {
     private String topic;
 
     public void sendEvent(TransactionEvent event) {
-        String key = event.getTenantIdentifier() + "-" + event.getResourceId();
+        String key = event.getTenantId() + "-" + event.getResourceId();
         String value = event.toString();
         kafkaTemplate.send(topic, key, value);
     }

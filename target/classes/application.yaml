@@ -9,6 +9,7 @@ spring:
   kafka:
 
 fineract:
+  tenantId: tn
   kafka:
     bootstrap-servers: ${BROKER_SERVER:"localhost:9092"}
     client-id: fineract-hook-api

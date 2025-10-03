@@ -3,7 +3,7 @@ import lombok.Data;
 @Data
 public class TransactionEvent {
 
-    private String tenantIdentifier;
+    private String tenantId;
     private String action;
     private String entity;
     private String resourceId;
