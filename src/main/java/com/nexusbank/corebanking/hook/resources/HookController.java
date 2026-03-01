@@ -1,11 +1,15 @@
 package com.nexusbank.corebanking.hook.resources;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nexusbank.corebanking.hook.model.Transaction;
 import com.nexusbank.corebanking.hook.model.TransactionEvent;
 import com.nexusbank.corebanking.hook.model.TransactionPayload;
 import com.nexusbank.corebanking.hook.model.TransactionRequest;
 import com.nexusbank.corebanking.hook.services.KafkaProducerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/hooks")
 public class HookController {
 
+    private static final Logger log = LoggerFactory.getLogger(HookController.class);
     private final KafkaProducerService kafkaProducerService;
     @Value("${fineract.tenantId}")
     private String tenantId;
@@ -30,7 +35,11 @@ public class HookController {
     @PostMapping("/transactions/")
     public ResponseEntity<String> receiveHook(@RequestBody Transaction transaction) {
         TransactionPayload transactionPayload = new TransactionPayload();
-
+        try {
+            log.info(new ObjectMapper().writeValueAsString(transaction));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         transactionPayload.setDate(transaction.getRequest().getTransactionDate());
         transactionPayload.setTransactionId(String.valueOf(transaction.getResponse().getResourceId()));
         transactionPayload.setNote(transaction.getRequest().getNote());

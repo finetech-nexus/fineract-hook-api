@@ -1,5 +1,10 @@
 server:
-  port: ${SERVER_PORT:9999}
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 
 spring:
   application:
@@ -9,9 +14,9 @@ spring:
   kafka:
 
 fineract:
-  tenantId: tn
+  tenantId: ${FINERACT_TENANT:tn}
   kafka:
-    bootstrap-servers: ${BROKER_SERVER:"localhost:9092"}
+    bootstrap-servers: ${BROKER_SERVER:}
     client-id: fineract-hook-api
     topic:
-      transaction: transaction
+      transaction: ${BROKER_TOPIC_TRANSACTIONS}

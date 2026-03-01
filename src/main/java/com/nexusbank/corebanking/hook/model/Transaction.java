@@ -1,5 +1,6 @@
 package com.nexusbank.corebanking.hook.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.Getter;
 
@@ -18,6 +19,7 @@ public class Transaction {
     private TransactionResponse response;
     private String createdByFullName;
     private String actionName;
+    @JsonIgnore
     private ZonedDateTime timestamp;
 
 }

@@ -12,15 +12,14 @@ import org.springframework.stereotype.Service;
 public class KafkaProducerService {
 
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${fineract.kafka.topic.transaction}")
     private String topic;
 
     public void sendEvent(TransactionEvent event) {
         String key = event.getTenantId() + "-" + event.getResourceId();
-        String value = event.toString();
-        kafkaTemplate.send(topic, key, value);
+        kafkaTemplate.send(topic, key, event);
     }
 
     public TransactionEvent buildEvent(TransactionPayload payload) {
