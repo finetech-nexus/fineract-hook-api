@@ -8,6 +8,7 @@ public class TransactionEvent {
     private String action;
     private String entity;
     private String resourceId;
+    private String notificationType;
     //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private TransactionPayload payload;
 

@@ -1,5 +1,7 @@
 # fineract-hook-api
 
+Receives Fineract webhooks and publishes them to Kafka. Notification topics and the curl calls used to register each hook are in [docs/FINERACT_HOOKS.md](docs/FINERACT_HOOKS.md).
+
 ## CI/CD (GitHub Actions)
 
 - **Build and push image** (`.github/workflows/build-push-image.yml`): on push to `main`, builds and pushes the image to Docker Hub as `nexusbank/fineract-hook-api:latest` and `nexusbank/fineract-hook-api:<short-sha>`.

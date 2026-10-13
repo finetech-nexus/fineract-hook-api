@@ -18,8 +18,12 @@ public class KafkaProducerService {
     private String topic;
 
     public void sendEvent(TransactionEvent event) {
+        send(topic, event);
+    }
+
+    public void send(String topicName, TransactionEvent event) {
         String key = event.getTenantId() + "-" + event.getResourceId();
-        kafkaTemplate.send(topic, key, event);
+        kafkaTemplate.send(topicName, key, event);
     }
 
     public TransactionEvent buildEvent(TransactionPayload payload) {

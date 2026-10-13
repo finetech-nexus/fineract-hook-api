@@ -19,4 +19,8 @@ fineract:
     bootstrap-servers: ${BROKER_SERVER:}
     client-id: fineract-hook-api
     topic:
-      transaction: ${BROKER_TOPIC_TRANSACTIONS}
+      transaction: ${BROKER_TOPIC_TRANSACTIONS:transactions}
+      notification-transaction: ${BROKER_TOPIC_NOTIFICATION_TRANSACTION:notification.transaction}
+      notification-payment-confirmation: ${BROKER_TOPIC_NOTIFICATION_PAYMENT_CONFIRMATION:notification.payment-confirmation}
+      notification-account: ${BROKER_TOPIC_NOTIFICATION_ACCOUNT:notification.account}
+      notification-card: ${BROKER_TOPIC_NOTIFICATION_CARD:notification.card}
