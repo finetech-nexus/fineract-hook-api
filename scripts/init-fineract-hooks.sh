@@ -51,7 +51,7 @@ create_hook() {
   echo
 }
 
-create_hook "Notification savings transactions" "/hooks/notifications/transaction" '[
+create_hook "Notification savings transactions" "/hooks/notifications/transaction/" '[
   {"actionName":"DEPOSIT","entityName":"SAVINGSACCOUNT"},
   {"actionName":"WITHDRAWAL","entityName":"SAVINGSACCOUNT"},
   {"actionName":"WITHDRAW","entityName":"SAVINGSACCOUNT"},
@@ -62,18 +62,27 @@ create_hook "Notification savings transactions" "/hooks/notifications/transactio
   {"actionName":"POSTINTEREST","entityName":"SAVINGSACCOUNT"}
 ]'
 
-create_hook "Notification loan transactions" "/hooks/notifications/transaction" '[
+create_hook "Notification account transfers" "/hooks/notifications/transaction/" '[
+  {"actionName":"CREATE","entityName":"ACCOUNTTRANSFER"},
+  {"actionName":"REFUNDBYTRANSFER","entityName":"ACCOUNTTRANSFER"}
+]'
+
+create_hook "Notification interop transfers" "/hooks/notifications/transaction/" '[
+  {"actionName":"CREATE","entityName":"INTERTRANSFER"}
+]'
+
+create_hook "Notification loan transactions" "/hooks/notifications/transaction/" '[
   {"actionName":"DISBURSE","entityName":"LOAN"},
   {"actionName":"REPAYMENT","entityName":"LOAN"},
   {"actionName":"REFUNDBYTRANSFER","entityName":"LOAN"}
 ]'
 
-create_hook "Notification online payment confirmation" "/hooks/notifications/payment-confirmation" '[
+create_hook "Notification online payment confirmation" "/hooks/notifications/payment-confirmation/" '[
   {"actionName":"CONFIRM","entityName":"ONLINEPAYMENT"},
   {"actionName":"AUTHORIZE","entityName":"PAYMENT"}
 ]'
 
-create_hook "Notification account lifecycle" "/hooks/notifications/account" '[
+create_hook "Notification account lifecycle" "/hooks/notifications/account/" '[
   {"actionName":"CREATE","entityName":"CLIENT"},
   {"actionName":"ACTIVATE","entityName":"CLIENT"},
   {"actionName":"REJECT","entityName":"CLIENT"},
@@ -83,7 +92,7 @@ create_hook "Notification account lifecycle" "/hooks/notifications/account" '[
   {"actionName":"BLOCK","entityName":"SAVINGSACCOUNT"}
 ]'
 
-create_hook "Notification card lifecycle" "/hooks/notifications/card" '[
+create_hook "Notification card lifecycle" "/hooks/notifications/card/" '[
   {"actionName":"CREATE","entityName":"CARD"},
   {"actionName":"BLOCK","entityName":"CARD"},
   {"actionName":"UPDATE","entityName":"CARD"}

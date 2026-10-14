@@ -15,6 +15,10 @@ spring:
 
 fineract:
   tenantId: ${FINERACT_TENANT:tn}
+  lookup:
+    jdbc-url: ${FINERACT_LOOKUP_JDBC_URL:}
+    username: ${FINERACT_LOOKUP_USERNAME:}
+    password: ${FINERACT_LOOKUP_PASSWORD:}
   kafka:
     bootstrap-servers: ${BROKER_SERVER:}
     client-id: fineract-hook-api

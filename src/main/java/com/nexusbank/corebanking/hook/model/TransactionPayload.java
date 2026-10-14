@@ -9,6 +9,7 @@ public class TransactionPayload {
     public String clientId;
     public String transactionId;
     public String transactionType;
+    public String transactionRole;
     public String amount;
     public String currency;
     public String note;

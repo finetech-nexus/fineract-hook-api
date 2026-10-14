@@ -1,15 +1,12 @@
 package com.nexusbank.corebanking.hook.resources;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nexusbank.corebanking.hook.model.Transaction;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.nexusbank.corebanking.hook.model.TransactionEvent;
-import com.nexusbank.corebanking.hook.model.TransactionPayload;
-import com.nexusbank.corebanking.hook.model.TransactionRequest;
-import com.nexusbank.corebanking.hook.model.TransactionResponse;
+import com.nexusbank.corebanking.hook.services.HookPayloads;
 import com.nexusbank.corebanking.hook.services.KafkaProducerService;
 import com.nexusbank.corebanking.hook.services.NotificationDestination;
 import com.nexusbank.corebanking.hook.services.NotificationTopicRouter;
+import com.nexusbank.corebanking.hook.services.SavingsClientLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +24,7 @@ public class HookController {
     private static final Logger log = LoggerFactory.getLogger(HookController.class);
     private final KafkaProducerService kafkaProducerService;
     private final NotificationTopicRouter topicRouter;
-    private final ObjectMapper objectMapper;
+    private final SavingsClientLookup clientLookup;
 
     @Value("${fineract.tenantId}")
     private String tenantId;
@@ -35,10 +32,10 @@ public class HookController {
     public HookController(
             KafkaProducerService kafkaProducerService,
             NotificationTopicRouter topicRouter,
-            ObjectMapper objectMapper) {
+            SavingsClientLookup clientLookup) {
         this.kafkaProducerService = kafkaProducerService;
         this.topicRouter = topicRouter;
-        this.objectMapper = objectMapper;
+        this.clientLookup = clientLookup;
     }
 
     /**
@@ -46,12 +43,11 @@ public class HookController {
      * publishes the event on the notification group topic selected from the Fineract action.
      */
     @PostMapping({"/transactions/", "/transactions", "/events/", "/events"})
-    public ResponseEntity<String> receiveHook(@RequestBody Transaction transaction) {
+    public ResponseEntity<String> receiveHook(@RequestBody JsonNode transaction) {
         logPayload(transaction);
-        TransactionEvent event = toEvent(transaction, null);
+        NotificationDestination destination = topicRouter.route(text(transaction, "entityName"), text(transaction, "actionName"));
+        TransactionEvent event = HookPayloads.toEvent(transaction, tenantId, destination.notificationType(), clientLookup);
         kafkaProducerService.sendEvent(event);
-        NotificationDestination destination = topicRouter.route(transaction.getEntityName(), transaction.getActionName());
-        event.setNotificationType(destination.notificationType());
         kafkaProducerService.send(destination.topic(), event);
         return ResponseEntity.ok("Hook received and sent to Kafka topic " + destination.topic());
     }
@@ -61,7 +57,7 @@ public class HookController {
      * Payload URL at /hooks/notifications/{type}.
      */
     @PostMapping({"/notifications/{type}", "/notifications/{type}/"})
-    public ResponseEntity<String> receiveTypedHook(@PathVariable String type, @RequestBody Transaction transaction) {
+    public ResponseEntity<String> receiveTypedHook(@PathVariable String type, @RequestBody JsonNode transaction) {
         logPayload(transaction);
         final String topic;
         try {
@@ -69,52 +65,31 @@ public class HookController {
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
-        TransactionEvent event = toEvent(transaction, topicRouter.route(transaction.getEntityName(), transaction.getActionName()).notificationType());
+        String notificationType = topicRouter.route(text(transaction, "entityName"), text(transaction, "actionName")).notificationType();
         if ("transaction".equalsIgnoreCase(type)) {
-            event.setNotificationType("TRANSACTION");
+            notificationType = "TRANSACTION";
         } else if ("payment-confirmation".equalsIgnoreCase(type) || "payment_confirmation".equalsIgnoreCase(type)) {
-            event.setNotificationType("PAYMENT_CONFIRMATION");
+            notificationType = "PAYMENT_CONFIRMATION";
         } else if ("account".equalsIgnoreCase(type)) {
-            event.setNotificationType("ACCOUNT");
+            notificationType = "ACCOUNT";
         } else if ("card".equalsIgnoreCase(type)) {
-            event.setNotificationType("CARD");
+            notificationType = "CARD";
         }
+        TransactionEvent event = HookPayloads.toEvent(transaction, tenantId, notificationType, clientLookup);
         kafkaProducerService.send(topic, event);
         return ResponseEntity.ok("Hook received and sent to Kafka topic " + topic);
     }
 
-    private TransactionEvent toEvent(Transaction transaction, String notificationType) {
-        TransactionRequest request = transaction.getRequest();
-        TransactionResponse response = transaction.getResponse();
-        TransactionPayload payload = new TransactionPayload();
-        if (request != null) {
-            payload.setDate(request.getTransactionDate());
-            payload.setNote(request.getNote());
-            payload.setAmount(String.valueOf(request.getTransactionAmount()));
-        }
-        if (response != null) {
-            payload.setTransactionId(String.valueOf(response.getResourceId()));
-            payload.setClientId(String.valueOf(response.getClientId()));
-            payload.setAccountId(String.valueOf(response.getSavingsId()));
-        } else if (transaction.getClientId() != 0) {
-            payload.setClientId(String.valueOf(transaction.getClientId()));
-        }
-        payload.setTransactionType(transaction.getActionName());
-        TransactionEvent event = new TransactionEvent();
-        event.setPayload(payload);
-        event.setAction("CREATION");
-        event.setEntity(transaction.getEntityName());
-        event.setResourceId(response == null ? null : String.valueOf(response.getResourceId()));
-        event.setTenantId(tenantId);
-        event.setNotificationType(notificationType);
-        return event;
+    private void logPayload(JsonNode transaction) {
+        String entity = text(transaction, "entityName");
+        String action = text(transaction, "actionName");
+        log.info("Fineract hook {} {} {}", entity, action, transaction);
     }
 
-    private void logPayload(Transaction transaction) {
-        try {
-            log.info(objectMapper.writeValueAsString(transaction));
-        } catch (JsonProcessingException e) {
-            log.warn("Unable to log Fineract hook payload");
+    private static String text(JsonNode node, String field) {
+        if (node == null || node.get(field) == null || node.get(field).isNull()) {
+            return null;
         }
+        return node.get(field).asText();
     }
 }
