@@ -45,6 +45,9 @@ public class HookController {
     @PostMapping({"/transactions/", "/transactions", "/events/", "/events"})
     public ResponseEntity<String> receiveHook(@RequestBody JsonNode transaction) {
         logPayload(transaction);
+        if (NotificationTopicRouter.isHoldReservation(text(transaction, "actionName"))) {
+            return ResponseEntity.ok("Hold reservation is not notified");
+        }
         NotificationDestination destination = topicRouter.route(text(transaction, "entityName"), text(transaction, "actionName"));
         TransactionEvent event = HookPayloads.toEvent(transaction, tenantId, destination.notificationType(), clientLookup);
         kafkaProducerService.sendEvent(event);
@@ -59,6 +62,9 @@ public class HookController {
     @PostMapping({"/notifications/{type}", "/notifications/{type}/"})
     public ResponseEntity<String> receiveTypedHook(@PathVariable String type, @RequestBody JsonNode transaction) {
         logPayload(transaction);
+        if (NotificationTopicRouter.isHoldReservation(text(transaction, "actionName"))) {
+            return ResponseEntity.ok("Hold reservation is not notified");
+        }
         final String topic;
         try {
             topic = topicRouter.topicForType(type);

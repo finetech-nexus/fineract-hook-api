@@ -54,6 +54,13 @@ public class NotificationTopicRouter {
     };
   }
 
+  /** A funds reservation is not a movement the customer should be told about. */
+  public static boolean isHoldReservation(String actionName) {
+    String action = upper(actionName);
+    return "PREPARE".equals(action) || "HOLD".equals(action) || "HOLDAMOUNT".equals(action)
+        || "AMOUNT_HOLD".equals(action) || "ONHOLD".equals(action);
+  }
+
   static boolean isPaymentConfirmation(String entity, String action) {
     return action.contains("CONFIRM")
         || action.contains("AUTHORIZE")

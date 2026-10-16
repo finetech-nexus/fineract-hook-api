@@ -3,6 +3,8 @@ package com.nexusbank.corebanking.hook.services;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NotificationTopicRouterTest {
 
@@ -31,6 +33,14 @@ class NotificationTopicRouterTest {
         NotificationDestination destination = router.route("CLIENT", "ACTIVATE");
         assertEquals("ACCOUNT", destination.notificationType());
         assertEquals("notification.account", destination.topic());
+    }
+
+    @Test
+    void holdReservationIsNotACustomerNotification() {
+        assertTrue(NotificationTopicRouter.isHoldReservation("PREPARE"));
+        assertTrue(NotificationTopicRouter.isHoldReservation("HOLDAMOUNT"));
+        assertFalse(NotificationTopicRouter.isHoldReservation("CREATE"));
+        assertFalse(NotificationTopicRouter.isHoldReservation("WITHDRAWAL"));
     }
 
     @Test
